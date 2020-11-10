@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+
+import click
+from os import system as shell
+
+@click.group()
+def mpip():
+    'Python packaging made easy'
+
+@mpip.command()
+@click.option('--testpypi', '-t', is_flag=True)
+@click.option('--pypi', '-p', is_flag=True)
+def publish(testpypi, pypi):
+    shell('python3 setup.py sdist bdist_wheel')
+    if not testpypi and not pypi:
+        pypi = True
+    if testpypi:
+        platform = 'testpypi'
+    if pypi:
+        platform = 'pypi'
+    shell('python3 -m twine upload --repository {platform} dist/*'.format(platform=platform))
+
+@mpip.command()
+def reset():
+    confirm = input('Remove dist, build, and .egg-info directories? (y) ')
+    if confirm == '' or confirm == 'y':
+        shell('rm -r build dist *.egg-info')
+    else:
+        click.echo('Aborting')
+
+mpip(prog_name='mp')
